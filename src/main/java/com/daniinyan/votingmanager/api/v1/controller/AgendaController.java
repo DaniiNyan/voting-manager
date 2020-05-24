@@ -1,9 +1,7 @@
 package com.daniinyan.votingmanager.api.v1.controller;
 
 import com.daniinyan.votingmanager.domain.Agenda;
-import com.daniinyan.votingmanager.repository.AgendaRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.daniinyan.votingmanager.service.AgendaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -14,29 +12,28 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/agenda")
 public class AgendaController {
 
-    private static final Logger logger = LoggerFactory.getLogger(AgendaController.class);
-    private AgendaRepository repository;
+    private AgendaService service;
 
     @Autowired
-    public AgendaController(AgendaRepository repository) {
-        this.repository = repository;
+    public AgendaController(AgendaService service) {
+        this.service = service;
     }
 
     @GetMapping
     @ResponseBody
-    public Flux<Agenda> getAllAgendas() {
-        return repository.findAll();
+    public Flux<Agenda> getAll() {
+        return service.getAll();
     }
 
     @GetMapping("/{agendaId}")
     @ResponseBody
     public Mono<Agenda> getAgendaById(@PathVariable String agendaId) {
-        return repository.findById(agendaId);
+        return service.getById(agendaId);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<Agenda> createAgenda(@RequestBody Agenda agenda) {
-        return repository.save(agenda);
+        return service.create(agenda);
     }
 }

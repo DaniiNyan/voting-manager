@@ -2,8 +2,6 @@ package com.daniinyan.votingmanager.domain;
 
 import org.springframework.data.annotation.Id;
 
-import java.util.List;
-
 public class Agenda {
 
     @Id
