@@ -39,8 +39,4 @@ public class AgendaController {
     public Mono<Agenda> createAgenda(@RequestBody Agenda agenda) {
         return repository.save(agenda);
     }
-
-
-
-
 }
