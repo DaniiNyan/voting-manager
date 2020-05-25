@@ -30,8 +30,12 @@ public class AgendaService {
     }
 
     public Mono<Agenda> create(Agenda agenda) {
+        if (agenda.getName() == null) {
+            throw new RequiredNameException();
+        }
+
         return repository
                 .save(agenda)
-                .switchIfEmpty(Mono.error(new RequiredNameException()));
+                .switchIfEmpty(Mono.error(new RuntimeException()));
     }
 }
