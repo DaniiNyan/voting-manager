@@ -1,5 +1,6 @@
 package com.daniinyan.votingmanager.api.v1.controller;
 
+import com.daniinyan.votingmanager.exception.RequiredAgendaException;
 import com.daniinyan.votingmanager.exception.IdNotFoundException;
 import com.daniinyan.votingmanager.exception.RequiredNameException;
 import org.slf4j.Logger;
@@ -22,6 +23,12 @@ public class ExceptionController {
 
     @ExceptionHandler(RequiredNameException.class)
     public ResponseEntity<String> handleRequiredName(RequiredNameException ex) {
+        logger.info(ex.getMessage(), ex);
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(RequiredAgendaException.class)
+    public ResponseEntity<String> handleRequiredAgenda(RequiredAgendaException ex) {
         logger.info(ex.getMessage(), ex);
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }

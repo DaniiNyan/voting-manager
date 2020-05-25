@@ -4,7 +4,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +14,6 @@ public class VotingSession {
     private String id;
     private LocalDateTime start;
     private LocalDateTime end;
-    private LocalTime durationTime;
     private SessionStatus status;
     private Agenda agenda;
     private List<Vote> votes = new ArrayList<>();
@@ -23,11 +21,10 @@ public class VotingSession {
     public VotingSession() {
     }
 
-    public VotingSession(String id, LocalDateTime start, LocalDateTime end, LocalTime durationTime, SessionStatus status, Agenda agenda, List<Vote> votes) {
+    public VotingSession(String id, LocalDateTime start, LocalDateTime end, SessionStatus status, Agenda agenda, List<Vote> votes) {
         this.id = id;
         this.start = start;
         this.end = end;
-        this.durationTime = durationTime;
         this.status = status;
         this.agenda = agenda;
         this.votes = votes;
@@ -55,14 +52,6 @@ public class VotingSession {
 
     public void setEnd(LocalDateTime end) {
         this.end = end;
-    }
-
-    public LocalTime getDurationTime() {
-        return durationTime;
-    }
-
-    public void setDurationTime(LocalTime durationTime) {
-        this.durationTime = durationTime;
     }
 
     public SessionStatus getStatus() {
