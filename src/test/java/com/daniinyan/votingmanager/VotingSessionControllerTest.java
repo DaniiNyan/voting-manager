@@ -31,7 +31,7 @@ public class VotingSessionControllerTest {
     WebTestClient client;
 
     @Test
-    public void shouldCreateASession() {
+    public void shouldCreateSession() {
         Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.NEW, VoteValue.YES);
         VotingSession session = new VotingSession(agenda);
 
@@ -45,7 +45,7 @@ public class VotingSessionControllerTest {
     }
 
     @Test
-    public void shouldSetDefaultValuesOnCreate() {
+    public void shouldSetDefaultValuesWhenCreatingSession() {
         Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.NEW, VoteValue.YES);
         VotingSession session = new VotingSession(agenda);
 
@@ -74,7 +74,7 @@ public class VotingSessionControllerTest {
     }
 
     @Test
-    public void shouldReturnBadRequestWhenAgendaAlreadyHasASession() {
+    public void shouldReturnBadRequestWhenAgendaAlreadyHasSession() {
         Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.OPENED, VoteValue.YES);
         VotingSession session = new VotingSession(agenda);
 
@@ -87,7 +87,7 @@ public class VotingSessionControllerTest {
     }
 
     @Test
-    public void shouldReturnAllVotingSessions() {
+    public void shouldReturnAllSessions() {
         Agenda agendaOne = new Agenda("one");
         Agenda agendaTwo = new Agenda("two");
         Agenda agendaThree = new Agenda("three");

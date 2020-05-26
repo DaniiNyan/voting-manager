@@ -27,7 +27,7 @@ public class AgendaServiceTest {
     AgendaService service;
 
     @Test
-    public void shouldReturnCorrectMonoOnCreate() {
+    public void shouldCreateAgenda() {
         Agenda agenda = new Agenda("Test");
         given(repository.save(BDDMockito.any(Agenda.class))).willReturn(Mono.just(agenda));
 
@@ -43,7 +43,7 @@ public class AgendaServiceTest {
     }
 
     @Test
-    public void shouldReturnCorrectAgendaById() {
+    public void shouldReturnCorrectAgendaWhenSearchingById() {
         Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.OPENED, VoteValue.YES);
         given(repository.findById("123")).willReturn(Mono.just(agenda));
 
