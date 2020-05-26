@@ -76,7 +76,6 @@ public class AgendaControllerTest {
                 .uri("/agenda/456")
                 .exchange()
                 .expectStatus().isNotFound();
-
     }
 
     @Test

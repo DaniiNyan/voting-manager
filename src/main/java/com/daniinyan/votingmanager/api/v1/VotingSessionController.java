@@ -22,7 +22,6 @@ public class VotingSessionController {
 
     @GetMapping
     @ResponseBody
-    // todo: show only opened sessions
     public Flux<VotingSession> findAll() {
         return service.findAll();
     }

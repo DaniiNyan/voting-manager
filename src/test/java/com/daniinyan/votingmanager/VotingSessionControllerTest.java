@@ -1,9 +1,6 @@
 package com.daniinyan.votingmanager;
 
-import com.daniinyan.votingmanager.domain.Agenda;
-import com.daniinyan.votingmanager.domain.AgendaStatus;
-import com.daniinyan.votingmanager.domain.VoteValue;
-import com.daniinyan.votingmanager.domain.VotingSession;
+import com.daniinyan.votingmanager.domain.*;
 import com.daniinyan.votingmanager.repository.VotingSessionRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
@@ -87,6 +84,15 @@ public class VotingSessionControllerTest {
     }
 
     @Test
+    public void shouldReturnNotFoundWhenSearchingByNonexistentAgenda() {
+        given(repository.findByAgendaId("456")).willReturn(Mono.empty());
+        client.get()
+                .uri("/session/456")
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+    @Test
     public void shouldReturnAllSessions() {
         Agenda agendaOne = new Agenda("one");
         Agenda agendaTwo = new Agenda("two");
@@ -127,6 +133,87 @@ public class VotingSessionControllerTest {
                 .jsonPath("$.start").isEqualTo("2020-01-01T10:00:00")
                 .jsonPath("$.end").isEqualTo("2020-02-02T20:00:00")
                 .jsonPath("$.votes").isEmpty();
+    }
+
+    @Test
+    public void shouldAddVote() {
+        Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.OPENED, null);
+        VotingSession session = new VotingSession(agenda);
+        session.setEnd(LocalDateTime.now().plusHours(1));
+        Vote vote = new Vote(VoteValue.YES, "321");
+
+        VotingSession sessionWithVote = new VotingSession(agenda);
+        sessionWithVote.addVote(vote);
+
+        given(repository.findByAgendaId("123")).willReturn(Mono.just(session));
+        given(repository.save(BDDMockito.any(VotingSession.class))).willReturn(Mono.just(sessionWithVote));
+        client.patch()
+                .uri("/session/123")
+                .body(BodyInserters.fromValue(vote))
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.votes").isNotEmpty();
+    }
+
+    @Test
+    public void shouldReturnBadRequestWhenVoteHasInvalidValue() {
+        Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.OPENED, null);
+        VotingSession session = new VotingSession(agenda);
+        session.setEnd(LocalDateTime.now().plusHours(1));
+        Vote vote = new Vote(null, "321");
+
+        given(repository.findByAgendaId("123")).willReturn(Mono.just(session));
+        client.patch()
+                .uri("/session/123")
+                .body(BodyInserters.fromValue(vote))
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    public void shouldReturnBadRequestWhenSessionAlreadyHasVoteFromAuthor() {
+        Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.OPENED, null);
+        VotingSession session = new VotingSession(agenda);
+        Vote vote = new Vote(VoteValue.YES, "321");
+        session.addVote(vote);
+        session.setEnd(LocalDateTime.now().plusHours(1));
+
+        given(repository.findByAgendaId("123")).willReturn(Mono.just(session));
+        client.patch()
+                .uri("/session/123")
+                .body(BodyInserters.fromValue(vote))
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    public void shouldReturnBadRequestWhenTryingToVoteOnNotOpenedSession() {
+        Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.NEW, null);
+        VotingSession session = new VotingSession(agenda);
+        Vote vote = new Vote(VoteValue.YES, "321");
+
+        given(repository.findByAgendaId("123")).willReturn(Mono.just(session));
+        client.patch()
+                .uri("/session/123")
+                .body(BodyInserters.fromValue(vote))
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    public void shouldReturnBadRequestWhenTryingToVoteOnSessionAfterEnd() {
+        Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.NEW, null);
+        VotingSession session = new VotingSession(agenda);
+        Vote vote = new Vote(VoteValue.YES, "321");
+        session.setEnd(LocalDateTime.now().minusHours(1));
+
+        given(repository.findByAgendaId("123")).willReturn(Mono.just(session));
+        client.patch()
+                .uri("/session/123")
+                .body(BodyInserters.fromValue(vote))
+                .exchange()
+                .expectStatus().isBadRequest();
     }
 
 
