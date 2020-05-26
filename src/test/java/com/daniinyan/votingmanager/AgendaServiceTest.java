@@ -1,11 +1,11 @@
 package com.daniinyan.votingmanager;
 
-import com.daniinyan.votingmanager.service.AgendaService;
 import com.daniinyan.votingmanager.domain.Agenda;
 import com.daniinyan.votingmanager.domain.AgendaStatus;
 import com.daniinyan.votingmanager.domain.VoteValue;
 import com.daniinyan.votingmanager.exception.RequiredNameException;
 import com.daniinyan.votingmanager.repository.AgendaRepository;
+import com.daniinyan.votingmanager.service.AgendaService;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;

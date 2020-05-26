@@ -2,7 +2,6 @@ package com.daniinyan.votingmanager;
 
 import com.daniinyan.votingmanager.domain.Agenda;
 import com.daniinyan.votingmanager.domain.AgendaStatus;
-import com.daniinyan.votingmanager.domain.VoteValue;
 import com.daniinyan.votingmanager.domain.VotingSession;
 import com.daniinyan.votingmanager.exception.OpenedSessionException;
 import com.daniinyan.votingmanager.exception.RequiredAgendaException;
