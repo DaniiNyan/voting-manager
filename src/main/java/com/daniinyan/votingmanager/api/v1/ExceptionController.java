@@ -1,4 +1,4 @@
-package com.daniinyan.votingmanager.api.v1.controller;
+package com.daniinyan.votingmanager.api.v1;
 
 import com.daniinyan.votingmanager.exception.OpenedSessionException;
 import com.daniinyan.votingmanager.exception.RequiredAgendaException;

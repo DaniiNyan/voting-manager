@@ -1,4 +1,4 @@
-package com.daniinyan.votingmanager.api.v1.controller;
+package com.daniinyan.votingmanager.api.v1;
 
 import com.daniinyan.votingmanager.domain.Vote;
 import com.daniinyan.votingmanager.domain.VotingSession;
