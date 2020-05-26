@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static org.mockito.BDDMockito.given;
@@ -76,5 +77,20 @@ public class AgendaControllerTest {
                 .exchange()
                 .expectStatus().isNotFound();
 
+    }
+
+    @Test
+    public void shouldReturnAllAgendas() {
+        given(repository.findAll()).willReturn(Flux.just(
+                new Agenda("agendaOne"),
+                new Agenda("agendaTwo"),
+                new Agenda("agendaThree")
+        ));
+
+        client.get()
+                .uri("/agenda")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBodyList(Agenda.class).hasSize(3);
     }
 }
