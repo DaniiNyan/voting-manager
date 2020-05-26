@@ -11,12 +11,12 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/session")
-public class SessionController {
+public class VotingSessionController {
 
     private VotingSessionService service;
 
     @Autowired
-    public SessionController(VotingSessionService service) {
+    public VotingSessionController(VotingSessionService service) {
         this.service = service;
     }
 
@@ -29,7 +29,6 @@ public class SessionController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    // todo: validate fields and set default values
     public Mono<VotingSession> openSession(@RequestBody VotingSession votingSession) {
         return service.open(votingSession);
     }

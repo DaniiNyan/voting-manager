@@ -1,5 +1,6 @@
 package com.daniinyan.votingmanager.api.v1.controller;
 
+import com.daniinyan.votingmanager.exception.OpenedSessionException;
 import com.daniinyan.votingmanager.exception.RequiredAgendaException;
 import com.daniinyan.votingmanager.exception.IdNotFoundException;
 import com.daniinyan.votingmanager.exception.RequiredNameException;
@@ -29,6 +30,12 @@ public class ExceptionController {
 
     @ExceptionHandler(RequiredAgendaException.class)
     public ResponseEntity<String> handleRequiredAgenda(RequiredAgendaException ex) {
+        logger.info(ex.getMessage(), ex);
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(OpenedSessionException.class)
+    public ResponseEntity<String> handleOpenedSession(OpenedSessionException ex) {
         logger.info(ex.getMessage(), ex);
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }

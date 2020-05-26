@@ -14,20 +14,22 @@ public class VotingSession {
     private String id;
     private LocalDateTime start;
     private LocalDateTime end;
-    private SessionStatus status;
     private Agenda agenda;
     private List<Vote> votes = new ArrayList<>();
 
     public VotingSession() {
     }
 
-    public VotingSession(String id, LocalDateTime start, LocalDateTime end, SessionStatus status, Agenda agenda, List<Vote> votes) {
+    public VotingSession(String id, LocalDateTime start, LocalDateTime end, Agenda agenda, List<Vote> votes) {
         this.id = id;
         this.start = start;
         this.end = end;
-        this.status = status;
         this.agenda = agenda;
         this.votes = votes;
+    }
+
+    public VotingSession(Agenda agenda) {
+        this.agenda = agenda;
     }
 
     public String getId() {
@@ -52,14 +54,6 @@ public class VotingSession {
 
     public void setEnd(LocalDateTime end) {
         this.end = end;
-    }
-
-    public SessionStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(SessionStatus status) {
-        this.status = status;
     }
 
     public Agenda getAgenda() {

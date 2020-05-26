@@ -1,13 +1,12 @@
 package com.daniinyan.votingmanager.service;
 
-import com.daniinyan.votingmanager.domain.SessionStatus;
+import com.daniinyan.votingmanager.domain.AgendaStatus;
 import com.daniinyan.votingmanager.domain.Vote;
 import com.daniinyan.votingmanager.domain.VotingSession;
 import com.daniinyan.votingmanager.exception.IdNotFoundException;
+import com.daniinyan.votingmanager.exception.OpenedSessionException;
 import com.daniinyan.votingmanager.exception.RequiredAgendaException;
 import com.daniinyan.votingmanager.repository.VotingSessionRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -30,12 +29,12 @@ public class VotingSessionService {
     }
 
     public Mono<VotingSession> open(VotingSession votingSession) {
-        if (votingSession.getAgenda() == null) {
-            throw new RequiredAgendaException();
-        }
+        VotingSession validSession = validateSession(votingSession);
 
-        return getByAgendaId(votingSession.getAgenda().getId())
-                .flatMap(session -> repository.save(setDefaultValues(session)))
+        return getByAgendaId(validSession.getAgenda().getId())
+                .switchIfEmpty(Mono.error(new RequiredAgendaException()))
+                .flatMap(session -> Mono.just(setDefaultValues(session)))
+                .flatMap(session -> repository.save(session))
                 .switchIfEmpty(Mono.error(new RuntimeException()));
     }
 
@@ -53,14 +52,25 @@ public class VotingSessionService {
                 });
     }
 
-    private VotingSession setDefaultValues(VotingSession votingSession) {
-        votingSession.setStart(LocalDateTime.now());
-        votingSession.setStatus(SessionStatus.OPENED);
-        if (votingSession.getEnd() == null) {
-            votingSession.setEnd(LocalDateTime.now().plusMinutes(1L));
+    public VotingSession setDefaultValues(VotingSession session) {
+        if (session.getEnd() == null) {
+            session.setEnd(LocalDateTime.now().plusMinutes(1L));
+        }
+        session.setStart(LocalDateTime.now());
+        session.getAgenda().setStatus(AgendaStatus.OPENED);
+
+        return session;
+    }
+
+    public VotingSession validateSession(VotingSession session) {
+        if (session.getAgenda() == null) {
+            throw new RequiredAgendaException();
         }
 
-        return votingSession;
+        if (session.getAgenda().getStatus() != AgendaStatus.NEW) {
+            throw new OpenedSessionException();
+        }
+        return session;
     }
 
 

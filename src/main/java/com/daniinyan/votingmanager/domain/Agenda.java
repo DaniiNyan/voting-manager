@@ -7,13 +7,15 @@ public class Agenda {
     @Id
     private String id;
     private String name;
+    private AgendaStatus status;
     private VoteValue result;
 
     public Agenda() {}
 
-    public Agenda(String id, String name, VoteValue result) {
+    public Agenda(String id, String name, AgendaStatus status, VoteValue result) {
         this.id = id;
         this.name = name;
+        this.status = status;
         this.result = result;
     }
 
@@ -43,5 +45,13 @@ public class Agenda {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public AgendaStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(AgendaStatus status) {
+        this.status = status;
     }
 }

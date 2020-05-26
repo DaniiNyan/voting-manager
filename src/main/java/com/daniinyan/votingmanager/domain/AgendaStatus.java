@@ -1,5 +1,5 @@
 package com.daniinyan.votingmanager.domain;
 
-public enum SessionStatus {
+public enum AgendaStatus {
     NEW, OPENED, CLOSED
 }
