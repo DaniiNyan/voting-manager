@@ -31,7 +31,7 @@ public class AgendaServiceTest {
         Agenda agenda = new Agenda("Test");
         given(repository.save(BDDMockito.any(Agenda.class))).willReturn(Mono.just(agenda));
 
-        service.create(agenda).subscribe(createdAgenda ->
+        service.save(agenda).subscribe(createdAgenda ->
             assertEquals(agenda.getName(), createdAgenda.getName()));
     }
 
@@ -39,7 +39,7 @@ public class AgendaServiceTest {
     public void shouldThrowExceptionWhenAgendaDoesNotHaveName() {
         Agenda agenda = new Agenda();
         agenda.setResult(VoteValue.YES);
-        assertThrows(RequiredNameException.class, () -> service.create(agenda));
+        assertThrows(RequiredNameException.class, () -> service.save(agenda));
     }
 
     @Test
@@ -47,7 +47,7 @@ public class AgendaServiceTest {
         Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.OPENED, VoteValue.YES);
         given(repository.findById("123")).willReturn(Mono.just(agenda));
 
-        service.getById("123").subscribe(foundAgenda -> {
+        service.findById("123").subscribe(foundAgenda -> {
                 assertEquals(agenda.getId(), foundAgenda.getId());
                 assertEquals(agenda.getName(), foundAgenda.getName());
                 assertEquals(agenda.getStatus(), foundAgenda.getStatus());

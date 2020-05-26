@@ -23,25 +23,25 @@ public class VotingSessionController {
     @GetMapping
     @ResponseBody
     // todo: show only opened sessions
-    public Flux<VotingSession> getAll() {
-        return service.getAll();
+    public Flux<VotingSession> findAll() {
+        return service.findAll();
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<VotingSession> openSession(@RequestBody VotingSession votingSession) {
-        return service.open(votingSession);
+    public Mono<VotingSession> save(@RequestBody VotingSession votingSession) {
+        return service.save(votingSession);
     }
 
     @GetMapping("/{agendaId}")
     @ResponseBody
-    public Mono<VotingSession> getSessionByAgendaId(@PathVariable String agendaId) {
-        return service.getByAgendaId(agendaId);
+    public Mono<VotingSession> findByAgendaId(@PathVariable String agendaId) {
+        return service.findByAgendaId(agendaId);
     }
 
     @PatchMapping("/{agendaId}")
     @ResponseStatus(HttpStatus.OK)
-    public Mono<VotingSession> vote(@PathVariable String agendaId, @RequestBody Vote vote) {
+    public Mono<VotingSession> addVoteToAgenda(@PathVariable String agendaId, @RequestBody Vote vote) {
         return service.addVoteToAgenda(agendaId, vote);
     }
 }

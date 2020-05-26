@@ -21,19 +21,19 @@ public class AgendaController {
 
     @GetMapping
     @ResponseBody
-    public Flux<Agenda> getAll() {
-        return service.getAll();
+    public Flux<Agenda> findAll() {
+        return service.findAll();
     }
 
     @GetMapping("/{agendaId}")
     @ResponseBody
-    public Mono<Agenda> getAgendaById(@PathVariable String agendaId) {
-        return service.getById(agendaId);
+    public Mono<Agenda> findById(@PathVariable String agendaId) {
+        return service.findById(agendaId);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<Agenda> createAgenda(@RequestBody Agenda agenda) {
-        return service.create(agenda);
+    public Mono<Agenda> save(@RequestBody Agenda agenda) {
+        return service.save(agenda);
     }
 }

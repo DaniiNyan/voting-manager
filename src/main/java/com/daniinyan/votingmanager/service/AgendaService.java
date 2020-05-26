@@ -19,17 +19,17 @@ public class AgendaService {
         this.repository = repository;
     }
 
-    public Flux<Agenda> getAll() {
+    public Flux<Agenda> findAll() {
         return repository.findAll();
     }
 
-    public Mono<Agenda> getById(String agendaId) {
+    public Mono<Agenda> findById(String agendaId) {
         return repository
                 .findById(agendaId)
                 .switchIfEmpty(Mono.error(new IdNotFoundException()));
     }
 
-    public Mono<Agenda> create(Agenda agenda) {
+    public Mono<Agenda> save(Agenda agenda) {
         if (agenda.getName() == null) {
             throw new RequiredNameException();
         }

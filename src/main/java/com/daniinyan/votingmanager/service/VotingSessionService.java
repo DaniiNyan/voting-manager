@@ -24,28 +24,28 @@ public class VotingSessionService {
         this.repository = repository;
     }
 
-    public Flux<VotingSession> getAll() {
+    public Flux<VotingSession> findAll() {
         return repository.findAll();
     }
 
-    public Mono<VotingSession> open(VotingSession votingSession) {
+    public Mono<VotingSession> save(VotingSession votingSession) {
         VotingSession validSession = validateSession(votingSession);
 
-        return getByAgendaId(validSession.getAgenda().getId())
+        return findByAgendaId(validSession.getAgenda().getId())
                 .switchIfEmpty(Mono.error(new RequiredAgendaException()))
                 .flatMap(session -> Mono.just(setDefaultValues(session)))
                 .flatMap(session -> repository.save(session))
                 .switchIfEmpty(Mono.error(new RuntimeException()));
     }
 
-    public Mono<VotingSession> getByAgendaId(String agendaId) {
+    public Mono<VotingSession> findByAgendaId(String agendaId) {
         return repository
                 .findByAgendaId(agendaId)
                 .switchIfEmpty(Mono.error(new IdNotFoundException()));
     }
 
     public Mono<VotingSession> addVoteToAgenda(String agendaId, Vote vote) {
-        return getByAgendaId(agendaId)
+        return findByAgendaId(agendaId)
                 .flatMap(session -> {
                     session.addVote(vote);
                     return repository.save(session);
