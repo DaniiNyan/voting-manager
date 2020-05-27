@@ -2,6 +2,7 @@ package com.daniinyan.votingmanager.service;
 
 import com.daniinyan.votingmanager.domain.*;
 import com.daniinyan.votingmanager.exception.*;
+import com.daniinyan.votingmanager.repository.AgendaRepository;
 import com.daniinyan.votingmanager.repository.VotingSessionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,10 +16,12 @@ import java.util.Arrays;
 public class VotingSessionService {
 
     private VotingSessionRepository repository;
+    private AgendaRepository agendaRepository;
 
     @Autowired
-    public VotingSessionService(VotingSessionRepository repository) {
+    public VotingSessionService(VotingSessionRepository repository, AgendaRepository agendaRepository) {
         this.repository = repository;
+        this.agendaRepository = agendaRepository;
     }
 
     public Flux<VotingSession> findAll() {
@@ -28,8 +31,7 @@ public class VotingSessionService {
     public Mono<VotingSession> save(VotingSession votingSession) {
         VotingSession validSession = validateSessionToOpen(votingSession);
 
-        return repository.findByAgendaId(validSession.getAgenda().getId())
-                .switchIfEmpty(Mono.error(new IdNotFoundException()))
+        return Mono.just(validSession)
                 .flatMap(session -> Mono.just(setDefaultValues(session)))
                 .flatMap(session -> repository.save(session))
                 .switchIfEmpty(Mono.error(new RuntimeException()));
@@ -72,12 +74,20 @@ public class VotingSessionService {
     }
 
     public VotingSession validateSessionToOpen(VotingSession session) {
-        if (session.getAgenda() == null) {
+        if (session.getAgenda() == null || session.getAgenda().getId() == null) {
             throw new RequiredAgendaException();
         }
 
-        if (session.getAgenda().getStatus() != AgendaStatus.NEW) {
-            throw new OpenedSessionException();
+        agendaRepository
+                .findById(session.getAgenda().getId())
+                .subscribe(session::setAgenda);
+
+        if (session.getAgenda().getStatus() == AgendaStatus.OPENED) {
+            throw new VotingSessionException("There're already an opened session with this agenda.");
+        }
+
+        if (session.getAgenda().getStatus() == AgendaStatus.CLOSED) {
+            throw new VotingSessionException("This agenda was already closed.");
         }
 
         return session;

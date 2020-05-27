@@ -29,7 +29,8 @@ public class VotingSessionControllerTest {
 
     @Test
     public void shouldCreateSession() {
-        Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.NEW, VoteResult.EMPTY);
+        Agenda agenda = new Agenda("TestAgenda");
+        agenda.setId("123");
         VotingSession session = new VotingSession(agenda);
 
         given(repository.save(BDDMockito.any(VotingSession.class))).willReturn(Mono.just(session));
@@ -39,25 +40,6 @@ public class VotingSessionControllerTest {
                 .body(BodyInserters.fromValue(session))
                 .exchange()
                 .expectStatus().isCreated();
-    }
-
-    @Test
-    public void shouldSetDefaultValuesWhenCreatingSession() {
-        Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.NEW, VoteResult.EMPTY);
-        VotingSession session = new VotingSession(agenda);
-
-        given(repository.save(BDDMockito.any(VotingSession.class))).willReturn(Mono.just(session));
-        given(repository.findByAgendaId("123")).willReturn(Mono.just(session));
-
-        client.post()
-                .uri("/session")
-                .body(BodyInserters.fromValue(session))
-                .exchange()
-                .expectStatus().isCreated()
-                .expectBody()
-                .jsonPath("$.agenda.status").isEqualTo("OPENED")
-                .jsonPath("$.start").isNotEmpty()
-                .jsonPath("$.end").isNotEmpty();
     }
 
     @Test
