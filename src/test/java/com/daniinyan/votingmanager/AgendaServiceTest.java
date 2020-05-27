@@ -2,7 +2,7 @@ package com.daniinyan.votingmanager;
 
 import com.daniinyan.votingmanager.domain.Agenda;
 import com.daniinyan.votingmanager.domain.AgendaStatus;
-import com.daniinyan.votingmanager.domain.VoteValue;
+import com.daniinyan.votingmanager.domain.VoteResult;
 import com.daniinyan.votingmanager.exception.RequiredNameException;
 import com.daniinyan.votingmanager.repository.AgendaRepository;
 import com.daniinyan.votingmanager.service.AgendaService;
@@ -38,13 +38,13 @@ public class AgendaServiceTest {
     @Test
     public void shouldThrowExceptionWhenAgendaDoesNotHaveName() {
         Agenda agenda = new Agenda();
-        agenda.setResult(VoteValue.YES);
+        agenda.setResult(VoteResult.YES);
         assertThrows(RequiredNameException.class, () -> service.save(agenda));
     }
 
     @Test
     public void shouldReturnCorrectAgendaWhenSearchingById() {
-        Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.OPENED, VoteValue.YES);
+        Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.OPENED, VoteResult.YES);
         given(repository.findById("123")).willReturn(Mono.just(agenda));
 
         service.findById("123").subscribe(foundAgenda -> {

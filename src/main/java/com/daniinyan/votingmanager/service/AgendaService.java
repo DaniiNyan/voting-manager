@@ -1,6 +1,8 @@
 package com.daniinyan.votingmanager.service;
 
 import com.daniinyan.votingmanager.domain.Agenda;
+import com.daniinyan.votingmanager.domain.AgendaStatus;
+import com.daniinyan.votingmanager.domain.VoteResult;
 import com.daniinyan.votingmanager.exception.IdNotFoundException;
 import com.daniinyan.votingmanager.exception.RequiredNameException;
 import com.daniinyan.votingmanager.repository.AgendaRepository;
@@ -33,6 +35,9 @@ public class AgendaService {
         if (agenda.getName() == null) {
             throw new RequiredNameException();
         }
+
+        agenda.setStatus(AgendaStatus.NEW);
+        agenda.setResult(VoteResult.EMPTY);
 
         return repository
                 .save(agenda)

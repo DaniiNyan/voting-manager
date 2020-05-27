@@ -2,7 +2,7 @@ package com.daniinyan.votingmanager;
 
 import com.daniinyan.votingmanager.domain.Agenda;
 import com.daniinyan.votingmanager.domain.AgendaStatus;
-import com.daniinyan.votingmanager.domain.VoteValue;
+import com.daniinyan.votingmanager.domain.VoteResult;
 import com.daniinyan.votingmanager.repository.AgendaRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
@@ -29,7 +29,7 @@ public class AgendaControllerTest {
 
     @Test
     public void shouldCreateAnAgenda() {
-        Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.NEW, VoteValue.YES);
+        Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.NEW, null);
         given(repository.save(BDDMockito.any(Agenda.class))).willReturn(Mono.just(agenda));
 
         client.post()
@@ -41,7 +41,7 @@ public class AgendaControllerTest {
                 .jsonPath("$.id").isEqualTo("123")
                 .jsonPath("$.name").isEqualTo("TestAgenda")
                 .jsonPath("$.status").isEqualTo("NEW")
-                .jsonPath("$.result").isEqualTo("YES");
+                .jsonPath("$.result").isEmpty();
     }
 
     @Test
@@ -56,7 +56,7 @@ public class AgendaControllerTest {
 
     @Test
     public void shouldReturnCorrectAgendaWhenSearchingById() {
-        Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.OPENED, VoteValue.YES);
+        Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.OPENED, VoteResult.YES);
         given(repository.findById("123")).willReturn(Mono.just(agenda));
 
         client.get()

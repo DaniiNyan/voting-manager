@@ -1,22 +1,22 @@
 package com.daniinyan.votingmanager.domain;
 
 public class Vote {
-    private VoteValue value;
+    private VoteResult value;
     private String authorId;
 
     public Vote() {
     }
 
-    public Vote(VoteValue value, String authorId) {
+    public Vote(VoteResult value, String authorId) {
         this.value = value;
         this.authorId = authorId;
     }
 
-    public VoteValue getValue() {
+    public VoteResult getValue() {
         return value;
     }
 
-    public void setValue(VoteValue value) {
+    public void setValue(VoteResult value) {
         this.value = value;
     }
 

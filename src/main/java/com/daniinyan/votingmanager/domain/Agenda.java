@@ -8,11 +8,11 @@ public class Agenda {
     private String id;
     private String name;
     private AgendaStatus status;
-    private VoteValue result;
+    private VoteResult result;
 
     public Agenda() {}
 
-    public Agenda(String id, String name, AgendaStatus status, VoteValue result) {
+    public Agenda(String id, String name, AgendaStatus status, VoteResult result) {
         this.id = id;
         this.name = name;
         this.status = status;
@@ -31,11 +31,11 @@ public class Agenda {
         this.name = name;
     }
 
-    public VoteValue getResult() {
+    public VoteResult getResult() {
         return result;
     }
 
-    public void setResult(VoteValue result) {
+    public void setResult(VoteResult result) {
         this.result = result;
     }
 

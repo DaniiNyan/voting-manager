@@ -29,7 +29,7 @@ public class VotingSessionControllerTest {
 
     @Test
     public void shouldCreateSession() {
-        Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.NEW, VoteValue.YES);
+        Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.NEW, VoteResult.EMPTY);
         VotingSession session = new VotingSession(agenda);
 
         given(repository.save(BDDMockito.any(VotingSession.class))).willReturn(Mono.just(session));
@@ -43,7 +43,7 @@ public class VotingSessionControllerTest {
 
     @Test
     public void shouldSetDefaultValuesWhenCreatingSession() {
-        Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.NEW, VoteValue.YES);
+        Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.NEW, VoteResult.EMPTY);
         VotingSession session = new VotingSession(agenda);
 
         given(repository.save(BDDMockito.any(VotingSession.class))).willReturn(Mono.just(session));
@@ -72,7 +72,7 @@ public class VotingSessionControllerTest {
 
     @Test
     public void shouldReturnBadRequestWhenAgendaAlreadyHasSession() {
-        Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.OPENED, VoteValue.YES);
+        Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.OPENED, VoteResult.YES);
         VotingSession session = new VotingSession(agenda);
 
         given(repository.findByAgendaId("123")).willReturn(Mono.just(session));
@@ -115,8 +115,8 @@ public class VotingSessionControllerTest {
     public void shouldReturnCorrectSessionWhenSearchingByAgendaId() {
         Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.NEW, null);
         VotingSession session = new VotingSession("345",
-                        LocalDateTime.of(2020, 1, 1, 10, 0),
-                        LocalDateTime.of(2020, 2, 2, 20, 0),
+                        LocalDateTime.now(),
+                        LocalDateTime.now().plusHours(1),
                         agenda,
                         null);
         given(repository.findByAgendaId("123")).willReturn(Mono.just(session));
@@ -130,8 +130,6 @@ public class VotingSessionControllerTest {
                 .jsonPath("$.agenda.name").isEqualTo("TestAgenda")
                 .jsonPath("$.agenda.status").isEqualTo("NEW")
                 .jsonPath("$.id").isEqualTo("345")
-                .jsonPath("$.start").isEqualTo("2020-01-01T10:00:00")
-                .jsonPath("$.end").isEqualTo("2020-02-02T20:00:00")
                 .jsonPath("$.votes").isEmpty();
     }
 
@@ -140,7 +138,7 @@ public class VotingSessionControllerTest {
         Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.OPENED, null);
         VotingSession session = new VotingSession(agenda);
         session.setEnd(LocalDateTime.now().plusHours(1));
-        Vote vote = new Vote(VoteValue.YES, "321");
+        Vote vote = new Vote(VoteResult.YES, "321");
 
         VotingSession sessionWithVote = new VotingSession(agenda);
         sessionWithVote.addVote(vote);
@@ -175,7 +173,7 @@ public class VotingSessionControllerTest {
     public void shouldReturnBadRequestWhenSessionAlreadyHasVoteFromAuthor() {
         Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.OPENED, null);
         VotingSession session = new VotingSession(agenda);
-        Vote vote = new Vote(VoteValue.YES, "321");
+        Vote vote = new Vote(VoteResult.YES, "321");
         session.addVote(vote);
         session.setEnd(LocalDateTime.now().plusHours(1));
 
@@ -191,7 +189,8 @@ public class VotingSessionControllerTest {
     public void shouldReturnBadRequestWhenTryingToVoteOnNotOpenedSession() {
         Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.NEW, null);
         VotingSession session = new VotingSession(agenda);
-        Vote vote = new Vote(VoteValue.YES, "321");
+        session.setEnd(LocalDateTime.now().plusHours(1));
+        Vote vote = new Vote(VoteResult.YES, "321");
 
         given(repository.findByAgendaId("123")).willReturn(Mono.just(session));
         client.patch()
@@ -205,7 +204,7 @@ public class VotingSessionControllerTest {
     public void shouldReturnBadRequestWhenTryingToVoteOnSessionAfterEnd() {
         Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.NEW, null);
         VotingSession session = new VotingSession(agenda);
-        Vote vote = new Vote(VoteValue.YES, "321");
+        Vote vote = new Vote(VoteResult.YES, "321");
         session.setEnd(LocalDateTime.now().minusHours(1));
 
         given(repository.findByAgendaId("123")).willReturn(Mono.just(session));
@@ -216,5 +215,72 @@ public class VotingSessionControllerTest {
                 .expectStatus().isBadRequest();
     }
 
+    @Test
+    public void shouldSetAgendaAsClosedWhenTryingToGetAfterEnd() {
+        Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.OPENED, null);
+        VotingSession session = new VotingSession(agenda);
+        session.setEnd(LocalDateTime.now().minusHours(1));
 
+        given(repository.findByAgendaId("123")).willReturn(Mono.just(session));
+        client.get()
+                .uri("/session/123")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.agenda.id").isEqualTo("123")
+                .jsonPath("$.agenda.name").isEqualTo("TestAgenda")
+                .jsonPath("$.agenda.status").isEqualTo("CLOSED");
+    }
+
+    @Test
+    public void shouldSetAgendaAsClosedWhenTryingToVoteAfterEnd() {
+        Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.OPENED, null);
+        VotingSession session = new VotingSession(agenda);
+        Vote vote = new Vote(VoteResult.YES, "321");
+        session.setEnd(LocalDateTime.now().minusHours(1));
+
+        given(repository.findByAgendaId("123")).willReturn(Mono.just(session));
+        client.patch()
+                .uri("/session/123")
+                .body(BodyInserters.fromValue(vote))
+                .exchange()
+                .expectStatus().isBadRequest();
+
+        client.get()
+                .uri("/session/123")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.agenda.status").isEqualTo("CLOSED");
+
+    }
+
+    @Test
+    public void shouldCalculateAgendaResultWhenSessionIsClosed() {
+        Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.OPENED, null);
+        VotingSession session = new VotingSession(agenda);
+        Vote voteOne = new Vote(VoteResult.YES, "321");
+        Vote voteTwo = new Vote(VoteResult.YES, "654");
+        Vote voteThree = new Vote(VoteResult.YES, "987");
+        Vote voteFour = new Vote(VoteResult.NO, "123");
+        Vote voteFive = new Vote(VoteResult.NO, "456");
+        session.addVote(voteOne);
+        session.addVote(voteTwo);
+        session.addVote(voteThree);
+        session.addVote(voteFour);
+        session.addVote(voteFive);
+        session.setEnd(LocalDateTime.now().minusHours(1));
+
+        given(repository.findByAgendaId("123")).willReturn(Mono.just(session));
+        client.get()
+                .uri("/session/123")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.agenda.id").isEqualTo("123")
+                .jsonPath("$.agenda.name").isEqualTo("TestAgenda")
+                .jsonPath("$.agenda.status").isEqualTo("CLOSED")
+                .jsonPath("$.votes").isNotEmpty()
+                .jsonPath("$.agenda.result").isEqualTo("YES");
+    }
 }
