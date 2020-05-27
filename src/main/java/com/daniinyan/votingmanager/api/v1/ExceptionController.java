@@ -15,43 +15,43 @@ public class ExceptionController {
 
     @ExceptionHandler(IdNotFoundException.class)
     public ResponseEntity<String> handleNotFound(IdNotFoundException ex) {
-        logger.info(ex.getMessage(), ex);
+        logger.info(ex.getMessage());
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(RequiredNameException.class)
     public ResponseEntity<String> handleRequiredName(RequiredNameException ex) {
-        logger.info(ex.getMessage(), ex);
+        logger.info(ex.getMessage());
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(RequiredAgendaException.class)
     public ResponseEntity<String> handleRequiredAgenda(RequiredAgendaException ex) {
-        logger.info(ex.getMessage(), ex);
+        logger.info(ex.getMessage());
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(OpenedSessionException.class)
-    public ResponseEntity<String> handleOpenedSession(OpenedSessionException ex) {
-        logger.info(ex.getMessage(), ex);
+    @ExceptionHandler(VotingSessionException.class)
+    public ResponseEntity<String> handleOpenedSession(VotingSessionException ex) {
+        logger.info(ex.getMessage());
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(AgendaException.class)
     public ResponseEntity<String> handleAgenda(AgendaException ex) {
-        logger.info(ex.getMessage(), ex);
+        logger.info(ex.getMessage());
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(InvalidVoteException.class)
     public ResponseEntity<String> handleInvalidVote(InvalidVoteException ex) {
-        logger.info(ex.getMessage(), ex);
+        logger.info(ex.getMessage());
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(InvalidAuthorException.class)
     public ResponseEntity<String> handleInvalidAuthor(InvalidAuthorException ex) {
-        logger.info(ex.getMessage(), ex);
+        logger.info(ex.getMessage());
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
