@@ -16,28 +16,20 @@ import java.util.Arrays;
 public class VotingSessionService {
 
     private VotingSessionRepository repository;
-    private AgendaRepository agendaRepository;
+    private AgendaService agendaService;
 
     @Autowired
-    public VotingSessionService(VotingSessionRepository repository, AgendaRepository agendaRepository) {
+    public VotingSessionService(VotingSessionRepository repository, AgendaService agendaService) {
         this.repository = repository;
-        this.agendaRepository = agendaRepository;
+        this.agendaService = agendaService;
     }
 
     public Flux<VotingSession> findAll() {
         return repository.findAll();
     }
 
-    public Mono<VotingSession> save(VotingSession votingSession) {
-        VotingSession validSession = validateSessionToOpen(votingSession);
-
-        return Mono.just(validSession)
-                .flatMap(session -> Mono.just(setDefaultValues(session)))
-                .flatMap(session -> repository.save(session))
-                .switchIfEmpty(Mono.error(new RuntimeException()));
-    }
-
     public Mono<VotingSession> findByAgendaId(String agendaId) {
+        // todo: replace repository by AgendaService
         return repository
                 .findByAgendaId(agendaId)
                 .switchIfEmpty(Mono.error(new IdNotFoundException()))
@@ -48,6 +40,18 @@ public class VotingSessionService {
                     }
                     return Mono.just(session);
                 });
+    }
+
+    public Mono<VotingSession> save(VotingSession session) {
+        if (session.getAgenda() == null || session.getAgenda().getId() == null) {
+            throw new RequiredAgendaException();
+        }
+
+        String agendaId = session.getAgenda().getId();
+        return agendaService.openAgenda(agendaId)
+                .map(agenda -> {session.setAgenda(agenda); return session;})
+                .map(this::setDefaultValues)
+                .flatMap(repository::save);
     }
 
     public Mono<VotingSession> addVoteToAgenda(String agendaId, Vote vote) {
@@ -67,29 +71,6 @@ public class VotingSessionService {
             session.setEnd(LocalDateTime.now().plusMinutes(1L));
         }
         session.setStart(LocalDateTime.now());
-        session.getAgenda().setStatus(AgendaStatus.OPENED);
-        session.getAgenda().setResult(VoteResult.EMPTY);
-
-        return session;
-    }
-
-    public VotingSession validateSessionToOpen(VotingSession session) {
-        if (session.getAgenda() == null || session.getAgenda().getId() == null) {
-            throw new RequiredAgendaException();
-        }
-
-        agendaRepository
-                .findById(session.getAgenda().getId())
-                .subscribe(session::setAgenda);
-
-        if (session.getAgenda().getStatus() == AgendaStatus.OPENED) {
-            throw new VotingSessionException("There're already an opened session with this agenda.");
-        }
-
-        if (session.getAgenda().getStatus() == AgendaStatus.CLOSED) {
-            throw new VotingSessionException("This agenda was already closed.");
-        }
-
         return session;
     }
 
