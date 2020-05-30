@@ -143,11 +143,26 @@ public class VotingSessionControllerTest {
     }
 
     @Test
-    public void shouldReturnBadRequestWhenVoteHasInvalidValue() {
+    public void shouldReturnBadRequestWhenVoteIsNull() {
         Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.OPENED, null);
         VotingSession session = new VotingSession(agenda);
         session.setEnd(LocalDateTime.now().plusHours(1));
         Vote vote = new Vote(null, "321");
+
+        given(sessionRepository.findByAgendaId("123")).willReturn(Mono.just(session));
+        client.patch()
+                .uri("/session/123")
+                .body(BodyInserters.fromValue(vote))
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    public void shouldReturnBadRequestWhenVoteHasInvalidValue() {
+        Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.OPENED, null);
+        VotingSession session = new VotingSession(agenda);
+        session.setEnd(LocalDateTime.now().plusHours(1));
+        Vote vote = new Vote(VoteResult.DRAW, "321");
 
         given(sessionRepository.findByAgendaId("123")).willReturn(Mono.just(session));
         client.patch()

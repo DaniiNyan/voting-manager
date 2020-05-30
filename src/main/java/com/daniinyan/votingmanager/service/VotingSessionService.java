@@ -1,8 +1,10 @@
 package com.daniinyan.votingmanager.service;
 
-import com.daniinyan.votingmanager.domain.*;
+import com.daniinyan.votingmanager.domain.AgendaStatus;
+import com.daniinyan.votingmanager.domain.Vote;
+import com.daniinyan.votingmanager.domain.VoteResult;
+import com.daniinyan.votingmanager.domain.VotingSession;
 import com.daniinyan.votingmanager.exception.*;
-import com.daniinyan.votingmanager.repository.AgendaRepository;
 import com.daniinyan.votingmanager.repository.VotingSessionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,7 +12,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 
 @Service
 public class VotingSessionService {
@@ -55,15 +56,15 @@ public class VotingSessionService {
     }
 
     public Mono<VotingSession> addVoteToAgenda(String agendaId, Vote vote) {
-        Mono<VotingSession> validSessionToVote = findByAgendaId(agendaId)
-                .flatMap(session -> Mono.just(validateSessionToVote(session)));
-
-        return validSessionToVote
-                .flatMap(session -> {
-                    Vote validVote = validateVote(vote, session);
-                    session.addVote(validVote);
-                    return repository.save(session);
-                });
+        return repository.findByAgendaId(agendaId)
+                .switchIfEmpty(Mono.error(new IdNotFoundException()))
+                .map(session -> {
+                    validateSessionToVote(session);
+                    validateVote(vote, session);
+                    session.addVote(vote);
+                    return session;
+                })
+                .flatMap(repository::save);
     }
 
     public VotingSession setDefaultValues(VotingSession session) {
@@ -94,7 +95,7 @@ public class VotingSessionService {
 
         if (vote.getValue() != VoteResult.NO && vote.getValue() != VoteResult.YES) {
             throw new InvalidVoteException(
-                    "Must be an accepted value. Values: " + Arrays.toString(VoteResult.values()));
+                    "Value must be YES or NO.");
         }
 
         if (session.getVotes().stream()
@@ -107,6 +108,7 @@ public class VotingSessionService {
     }
 
     public VotingSession closeSession(VotingSession session) {
+        // todo: close agenda with agendaService
         session.getAgenda().setStatus(AgendaStatus.CLOSED);
         session.getAgenda().setResult(calculateResult(session));
         repository.save(session);
