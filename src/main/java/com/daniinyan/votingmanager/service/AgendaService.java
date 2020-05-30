@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Optional;
+
 @Service
 public class AgendaService {
 
@@ -60,5 +62,19 @@ public class AgendaService {
                     return agenda;
                 })
                 .flatMap(updatedAgenda -> repository.save(updatedAgenda));
+    }
+
+    public Mono<Agenda> close(String agendaId, VoteResult result) {
+        return repository.findById(agendaId)
+                .switchIfEmpty(Mono.error(new IdNotFoundException()))
+                .map(agenda -> {
+                    Agenda closedAgenda = new Agenda();
+                    closedAgenda.setName(agenda.getName());
+                    closedAgenda.setId(agendaId);
+                    closedAgenda.setStatus(AgendaStatus.CLOSED);
+                    closedAgenda.setResult(result);
+                    return closedAgenda;
+                })
+                .flatMap(repository::save);
     }
 }

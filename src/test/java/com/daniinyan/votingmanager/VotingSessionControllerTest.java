@@ -81,25 +81,6 @@ public class VotingSessionControllerTest {
     }
 
     @Test
-    public void shouldReturnAllSessions() {
-        Agenda agendaOne = new Agenda("one");
-        Agenda agendaTwo = new Agenda("two");
-        Agenda agendaThree = new Agenda("three");
-
-        given(sessionRepository.findAll()).willReturn(Flux.just(
-                new VotingSession(agendaOne),
-                new VotingSession(agendaTwo),
-                new VotingSession(agendaThree)
-        ));
-
-        client.get()
-                .uri("/session")
-                .exchange()
-                .expectStatus().isOk()
-                .expectBodyList(VotingSession.class).hasSize(3);
-    }
-
-    @Test
     public void shouldReturnCorrectSessionWhenSearchingByAgendaId() {
         Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.NEW, null);
         VotingSession session = new VotingSession("345",
@@ -223,8 +204,11 @@ public class VotingSessionControllerTest {
         Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.OPENED, null);
         VotingSession session = new VotingSession(agenda);
         session.setEnd(LocalDateTime.now().minusHours(1));
+        Agenda savedAgenda = new Agenda("123", "TestAgenda", AgendaStatus.CLOSED, VoteResult.YES);
 
         given(sessionRepository.findByAgendaId("123")).willReturn(Mono.just(session));
+        given(agendaRepository.findById("123")).willReturn(Mono.just(agenda));
+        given(agendaRepository.save(BDDMockito.any(Agenda.class))).willReturn(Mono.just(savedAgenda));
         client.get()
                 .uri("/session/123")
                 .exchange()
@@ -273,8 +257,11 @@ public class VotingSessionControllerTest {
         session.addVote(voteFour);
         session.addVote(voteFive);
         session.setEnd(LocalDateTime.now().minusHours(1));
+        Agenda savedAgenda = new Agenda("123", "TestAgenda", AgendaStatus.CLOSED, VoteResult.YES);
 
         given(sessionRepository.findByAgendaId("123")).willReturn(Mono.just(session));
+        given(agendaRepository.findById("123")).willReturn(Mono.just(agenda));
+        given(agendaRepository.save(BDDMockito.any(Agenda.class))).willReturn(Mono.just(savedAgenda));
         client.get()
                 .uri("/session/123")
                 .exchange()

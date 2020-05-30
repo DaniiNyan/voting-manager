@@ -20,12 +20,6 @@ public class VotingSessionController {
         this.service = service;
     }
 
-    @GetMapping
-    @ResponseBody
-    public Flux<VotingSession> findAll() {
-        return service.findAll();
-    }
-
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<VotingSession> save(@RequestBody VotingSession votingSession) {

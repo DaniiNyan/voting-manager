@@ -8,7 +8,6 @@ import com.daniinyan.votingmanager.exception.*;
 import com.daniinyan.votingmanager.repository.VotingSessionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -25,22 +24,23 @@ public class VotingSessionService {
         this.agendaService = agendaService;
     }
 
-    public Flux<VotingSession> findAll() {
-        return repository.findAll();
+    public Mono<VotingSession> update(VotingSession session) {
+        boolean isOpen = session.getAgenda().getStatus() != AgendaStatus.CLOSED;
+        boolean isExpired = session.getEnd().isBefore(LocalDateTime.now());
+        if (isOpen && isExpired) {
+            String agendaId = session.getAgenda().getId();
+            VoteResult result = calculateResult(session);
+            return agendaService.close(agendaId, result)
+                    .map(agenda -> {session.setAgenda(agenda); return session;});
+        }
+        return Mono.just(session);
     }
 
     public Mono<VotingSession> findByAgendaId(String agendaId) {
-        // todo: replace repository by AgendaService
         return repository
                 .findByAgendaId(agendaId)
                 .switchIfEmpty(Mono.error(new IdNotFoundException()))
-                .flatMap(session -> {
-                    if (session.getAgenda().getStatus() != AgendaStatus.CLOSED
-                            && session.getEnd().isBefore(LocalDateTime.now())) {
-                        return Mono.just(closeSession(session));
-                    }
-                    return Mono.just(session);
-                });
+                .flatMap(this::update);
     }
 
     public Mono<VotingSession> save(VotingSession session) {
@@ -50,9 +50,20 @@ public class VotingSessionService {
 
         String agendaId = session.getAgenda().getId();
         return agendaService.openAgenda(agendaId)
-                .map(agenda -> {session.setAgenda(agenda); return session;})
+                .map(agenda -> {
+                    session.setAgenda(agenda);
+                    return session;
+                })
                 .map(this::setDefaultValues)
                 .flatMap(repository::save);
+    }
+
+    public VotingSession setDefaultValues(VotingSession session) {
+        if (session.getEnd() == null) {
+            session.setEnd(LocalDateTime.now().plusMinutes(1L));
+        }
+        session.setStart(LocalDateTime.now());
+        return session;
     }
 
     public Mono<VotingSession> addVoteToAgenda(String agendaId, Vote vote) {
@@ -65,14 +76,6 @@ public class VotingSessionService {
                     return session;
                 })
                 .flatMap(repository::save);
-    }
-
-    public VotingSession setDefaultValues(VotingSession session) {
-        if (session.getEnd() == null) {
-            session.setEnd(LocalDateTime.now().plusMinutes(1L));
-        }
-        session.setStart(LocalDateTime.now());
-        return session;
     }
 
     public VotingSession validateSessionToVote(VotingSession session) {
