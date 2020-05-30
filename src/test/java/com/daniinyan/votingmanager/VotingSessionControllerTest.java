@@ -1,6 +1,7 @@
 package com.daniinyan.votingmanager;
 
 import com.daniinyan.votingmanager.domain.*;
+import com.daniinyan.votingmanager.repository.AgendaRepository;
 import com.daniinyan.votingmanager.repository.VotingSessionRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
@@ -22,7 +23,10 @@ import static org.mockito.BDDMockito.given;
 public class VotingSessionControllerTest {
 
     @MockBean
-    VotingSessionRepository repository;
+    VotingSessionRepository sessionRepository;
+
+    @MockBean
+    AgendaRepository agendaRepository;
 
     @Autowired
     WebTestClient client;
@@ -31,10 +35,12 @@ public class VotingSessionControllerTest {
     public void shouldCreateSession() {
         Agenda agenda = new Agenda("TestAgenda");
         agenda.setId("123");
+        agenda.setStatus(AgendaStatus.NEW);
         VotingSession session = new VotingSession(agenda);
 
-        given(repository.save(BDDMockito.any(VotingSession.class))).willReturn(Mono.just(session));
-        given(repository.findByAgendaId("123")).willReturn(Mono.just(session));
+        given(agendaRepository.findById("123")).willReturn(Mono.just(agenda));
+        given(agendaRepository.save(BDDMockito.any(Agenda.class))).willReturn(Mono.just(agenda));
+        given(sessionRepository.save(BDDMockito.any(VotingSession.class))).willReturn(Mono.just(session));
         client.post()
                 .uri("/session")
                 .body(BodyInserters.fromValue(session))
@@ -57,7 +63,7 @@ public class VotingSessionControllerTest {
         Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.OPENED, VoteResult.YES);
         VotingSession session = new VotingSession(agenda);
 
-        given(repository.findByAgendaId("123")).willReturn(Mono.just(session));
+        given(agendaRepository.findById("123")).willReturn(Mono.just(agenda));
         client.post()
                 .uri("/session")
                 .body(BodyInserters.fromValue(session))
@@ -67,7 +73,7 @@ public class VotingSessionControllerTest {
 
     @Test
     public void shouldReturnNotFoundWhenSearchingByNonexistentAgenda() {
-        given(repository.findByAgendaId("456")).willReturn(Mono.empty());
+        given(sessionRepository.findByAgendaId("456")).willReturn(Mono.empty());
         client.get()
                 .uri("/session/456")
                 .exchange()
@@ -80,7 +86,7 @@ public class VotingSessionControllerTest {
         Agenda agendaTwo = new Agenda("two");
         Agenda agendaThree = new Agenda("three");
 
-        given(repository.findAll()).willReturn(Flux.just(
+        given(sessionRepository.findAll()).willReturn(Flux.just(
                 new VotingSession(agendaOne),
                 new VotingSession(agendaTwo),
                 new VotingSession(agendaThree)
@@ -101,7 +107,7 @@ public class VotingSessionControllerTest {
                         LocalDateTime.now().plusHours(1),
                         agenda,
                         null);
-        given(repository.findByAgendaId("123")).willReturn(Mono.just(session));
+        given(sessionRepository.findByAgendaId("123")).willReturn(Mono.just(session));
 
         client.get()
                 .uri("/session/123")
@@ -125,8 +131,8 @@ public class VotingSessionControllerTest {
         VotingSession sessionWithVote = new VotingSession(agenda);
         sessionWithVote.addVote(vote);
 
-        given(repository.findByAgendaId("123")).willReturn(Mono.just(session));
-        given(repository.save(BDDMockito.any(VotingSession.class))).willReturn(Mono.just(sessionWithVote));
+        given(sessionRepository.findByAgendaId("123")).willReturn(Mono.just(session));
+        given(sessionRepository.save(BDDMockito.any(VotingSession.class))).willReturn(Mono.just(sessionWithVote));
         client.patch()
                 .uri("/session/123")
                 .body(BodyInserters.fromValue(vote))
@@ -143,7 +149,7 @@ public class VotingSessionControllerTest {
         session.setEnd(LocalDateTime.now().plusHours(1));
         Vote vote = new Vote(null, "321");
 
-        given(repository.findByAgendaId("123")).willReturn(Mono.just(session));
+        given(sessionRepository.findByAgendaId("123")).willReturn(Mono.just(session));
         client.patch()
                 .uri("/session/123")
                 .body(BodyInserters.fromValue(vote))
@@ -159,7 +165,7 @@ public class VotingSessionControllerTest {
         session.addVote(vote);
         session.setEnd(LocalDateTime.now().plusHours(1));
 
-        given(repository.findByAgendaId("123")).willReturn(Mono.just(session));
+        given(sessionRepository.findByAgendaId("123")).willReturn(Mono.just(session));
         client.patch()
                 .uri("/session/123")
                 .body(BodyInserters.fromValue(vote))
@@ -174,7 +180,7 @@ public class VotingSessionControllerTest {
         session.setEnd(LocalDateTime.now().plusHours(1));
         Vote vote = new Vote(VoteResult.YES, "321");
 
-        given(repository.findByAgendaId("123")).willReturn(Mono.just(session));
+        given(sessionRepository.findByAgendaId("123")).willReturn(Mono.just(session));
         client.patch()
                 .uri("/session/123")
                 .body(BodyInserters.fromValue(vote))
@@ -189,7 +195,7 @@ public class VotingSessionControllerTest {
         Vote vote = new Vote(VoteResult.YES, "321");
         session.setEnd(LocalDateTime.now().minusHours(1));
 
-        given(repository.findByAgendaId("123")).willReturn(Mono.just(session));
+        given(sessionRepository.findByAgendaId("123")).willReturn(Mono.just(session));
         client.patch()
                 .uri("/session/123")
                 .body(BodyInserters.fromValue(vote))
@@ -203,7 +209,7 @@ public class VotingSessionControllerTest {
         VotingSession session = new VotingSession(agenda);
         session.setEnd(LocalDateTime.now().minusHours(1));
 
-        given(repository.findByAgendaId("123")).willReturn(Mono.just(session));
+        given(sessionRepository.findByAgendaId("123")).willReturn(Mono.just(session));
         client.get()
                 .uri("/session/123")
                 .exchange()
@@ -221,7 +227,7 @@ public class VotingSessionControllerTest {
         Vote vote = new Vote(VoteResult.YES, "321");
         session.setEnd(LocalDateTime.now().minusHours(1));
 
-        given(repository.findByAgendaId("123")).willReturn(Mono.just(session));
+        given(sessionRepository.findByAgendaId("123")).willReturn(Mono.just(session));
         client.patch()
                 .uri("/session/123")
                 .body(BodyInserters.fromValue(vote))
@@ -253,7 +259,7 @@ public class VotingSessionControllerTest {
         session.addVote(voteFive);
         session.setEnd(LocalDateTime.now().minusHours(1));
 
-        given(repository.findByAgendaId("123")).willReturn(Mono.just(session));
+        given(sessionRepository.findByAgendaId("123")).willReturn(Mono.just(session));
         client.get()
                 .uri("/session/123")
                 .exchange()
