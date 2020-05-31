@@ -15,25 +15,13 @@ import java.time.LocalDateTime;
 @Service
 public class VotingSessionService {
 
-    private VotingSessionRepository repository;
-    private AgendaService agendaService;
+    private final VotingSessionRepository repository;
+    private final AgendaService agendaService;
 
     @Autowired
     public VotingSessionService(VotingSessionRepository repository, AgendaService agendaService) {
         this.repository = repository;
         this.agendaService = agendaService;
-    }
-
-    public Mono<VotingSession> update(VotingSession session) {
-        boolean isOpen = session.getAgenda().getStatus() != AgendaStatus.CLOSED;
-        boolean isExpired = session.getEnd().isBefore(LocalDateTime.now());
-        if (isOpen && isExpired) {
-            String agendaId = session.getAgenda().getId();
-            VoteResult result = calculateResult(session);
-            return agendaService.close(agendaId, result)
-                    .map(agenda -> {session.setAgenda(agenda); return session;});
-        }
-        return Mono.just(session);
     }
 
     public Mono<VotingSession> findByAgendaId(String agendaId) {
@@ -58,6 +46,20 @@ public class VotingSessionService {
                 .flatMap(repository::save);
     }
 
+    public Mono<VotingSession> update(VotingSession session) {
+        boolean isOpen = session.getAgenda().getStatus() != AgendaStatus.CLOSED;
+        boolean isExpired = session.getEnd().isBefore(LocalDateTime.now());
+
+        if (isOpen && isExpired) {
+            String agendaId = session.getAgenda().getId();
+            VoteResult result = calculateResult(session);
+            return agendaService.close(agendaId, result)
+                    .map(agenda -> {session.setAgenda(agenda); return session;});
+        }
+
+        return Mono.just(session);
+    }
+
     public VotingSession setDefaultValues(VotingSession session) {
         if (session.getEnd() == null) {
             session.setEnd(LocalDateTime.now().plusMinutes(1L));
@@ -78,20 +80,17 @@ public class VotingSessionService {
                 .flatMap(repository::save);
     }
 
-    public VotingSession validateSessionToVote(VotingSession session) {
+    public void validateSessionToVote(VotingSession session) {
         if (session.getAgenda().getStatus() != AgendaStatus.OPENED) {
             throw new AgendaException("Agenda isn't open.");
         }
 
         if (session.getEnd().isBefore(LocalDateTime.now())) {
-            closeSession(session);
             throw new AgendaException("Agenda is closed.");
         }
-
-        return session;
     }
 
-    public Vote validateVote(Vote vote, VotingSession session) {
+    public void validateVote(Vote vote, VotingSession session) {
         if (vote.getValue() == null) {
             throw new InvalidVoteException("Must have a value.");
         }
@@ -106,22 +105,11 @@ public class VotingSessionService {
                         sessionVote.getAuthorId().equals(vote.getAuthorId()))) {
             throw new InvalidAuthorException("This author has already a vote on this session.");
         }
-
-        return vote;
-    }
-
-    public VotingSession closeSession(VotingSession session) {
-        // todo: close agenda with agendaService
-        session.getAgenda().setStatus(AgendaStatus.CLOSED);
-        session.getAgenda().setResult(calculateResult(session));
-        repository.save(session);
-        return session;
     }
 
     public VoteResult calculateResult(VotingSession session) {
-        if (session.getAgenda().getResult() == VoteResult.DRAW
-                || session.getAgenda().getResult() == VoteResult.EMPTY) {
-            return session.getAgenda().getResult();
+        if (session.getVotes().isEmpty()) {
+            return VoteResult.EMPTY;
         }
 
         long totalYes = session.getVotes().stream()
@@ -137,7 +125,6 @@ public class VotingSessionService {
         }
 
         return totalYes > totalNo ? VoteResult.YES : VoteResult.NO;
-
     }
 
 }

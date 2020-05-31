@@ -11,10 +11,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.mockito.BDDMockito.given;
 
@@ -84,10 +85,10 @@ public class VotingSessionControllerTest {
     public void shouldReturnCorrectSessionWhenSearchingByAgendaId() {
         Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.NEW, null);
         VotingSession session = new VotingSession("345",
-                        LocalDateTime.now(),
-                        LocalDateTime.now().plusHours(1),
-                        agenda,
-                        null);
+                LocalDateTime.now(),
+                LocalDateTime.now().plusHours(1),
+                agenda,
+                null);
         given(sessionRepository.findByAgendaId("123")).willReturn(Mono.just(session));
 
         client.get()
@@ -204,11 +205,16 @@ public class VotingSessionControllerTest {
         Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.OPENED, null);
         VotingSession session = new VotingSession(agenda);
         session.setEnd(LocalDateTime.now().minusHours(1));
+
+        List<Vote> votes = Arrays.asList(new Vote(VoteResult.YES, "321"),
+                new Vote(VoteResult.YES, "654"));
         Agenda savedAgenda = new Agenda("123", "TestAgenda", AgendaStatus.CLOSED, VoteResult.YES);
+        VotingSession savedSession = new VotingSession("123", LocalDateTime.now().minusHours(1), LocalDateTime.now().minusMinutes(20), savedAgenda, votes);
 
         given(sessionRepository.findByAgendaId("123")).willReturn(Mono.just(session));
         given(agendaRepository.findById("123")).willReturn(Mono.just(agenda));
         given(agendaRepository.save(BDDMockito.any(Agenda.class))).willReturn(Mono.just(savedAgenda));
+        given(sessionRepository.save(BDDMockito.any(VotingSession.class))).willReturn(Mono.just(savedSession));
         client.get()
                 .uri("/session/123")
                 .exchange()
@@ -220,48 +226,23 @@ public class VotingSessionControllerTest {
     }
 
     @Test
-    public void shouldSetAgendaAsClosedWhenTryingToVoteAfterEnd() {
-        Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.OPENED, null);
-        VotingSession session = new VotingSession(agenda);
-        Vote vote = new Vote(VoteResult.YES, "321");
-        session.setEnd(LocalDateTime.now().minusHours(1));
-
-        given(sessionRepository.findByAgendaId("123")).willReturn(Mono.just(session));
-        client.patch()
-                .uri("/session/123")
-                .body(BodyInserters.fromValue(vote))
-                .exchange()
-                .expectStatus().isBadRequest();
-
-        client.get()
-                .uri("/session/123")
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$.agenda.status").isEqualTo("CLOSED");
-
-    }
-
-    @Test
     public void shouldCalculateAgendaResultWhenSessionIsClosed() {
         Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.OPENED, null);
         VotingSession session = new VotingSession(agenda);
-        Vote voteOne = new Vote(VoteResult.YES, "321");
-        Vote voteTwo = new Vote(VoteResult.YES, "654");
-        Vote voteThree = new Vote(VoteResult.YES, "987");
-        Vote voteFour = new Vote(VoteResult.NO, "123");
-        Vote voteFive = new Vote(VoteResult.NO, "456");
-        session.addVote(voteOne);
-        session.addVote(voteTwo);
-        session.addVote(voteThree);
-        session.addVote(voteFour);
-        session.addVote(voteFive);
+        List<Vote> votes = Arrays.asList(new Vote(VoteResult.YES, "321"),
+                new Vote(VoteResult.YES, "654"),
+                new Vote(VoteResult.YES, "987"),
+                new Vote(VoteResult.NO, "123"),
+                new Vote(VoteResult.NO, "456"));
+        session.setVotes(votes);
         session.setEnd(LocalDateTime.now().minusHours(1));
         Agenda savedAgenda = new Agenda("123", "TestAgenda", AgendaStatus.CLOSED, VoteResult.YES);
+        VotingSession savedSession = new VotingSession("123", LocalDateTime.now().minusHours(1), LocalDateTime.now().minusMinutes(20), savedAgenda, votes);
 
         given(sessionRepository.findByAgendaId("123")).willReturn(Mono.just(session));
         given(agendaRepository.findById("123")).willReturn(Mono.just(agenda));
         given(agendaRepository.save(BDDMockito.any(Agenda.class))).willReturn(Mono.just(savedAgenda));
+        given(sessionRepository.save(BDDMockito.any(VotingSession.class))).willReturn(Mono.just(savedSession));
         client.get()
                 .uri("/session/123")
                 .exchange()
