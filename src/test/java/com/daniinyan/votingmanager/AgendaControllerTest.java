@@ -17,7 +17,7 @@ import reactor.core.publisher.Mono;
 
 import static org.mockito.BDDMockito.given;
 
-@SpringBootTest
+@SpringBootTest(properties = {"springdoc.api-docs.enabled=false"})
 @AutoConfigureWebTestClient
 public class AgendaControllerTest {
 

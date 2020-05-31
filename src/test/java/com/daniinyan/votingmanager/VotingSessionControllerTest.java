@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 import reactor.core.publisher.Mono;
@@ -19,7 +20,7 @@ import java.util.List;
 
 import static org.mockito.BDDMockito.given;
 
-@SpringBootTest
+@SpringBootTest(properties = {"springdoc.api-docs.enabled=false"})
 @AutoConfigureWebTestClient
 public class VotingSessionControllerTest {
 
@@ -60,7 +61,7 @@ public class VotingSessionControllerTest {
     }
 
     @Test
-    public void shouldReturnBadRequestWhenAgendaAlreadyHasSession() {
+    public void shouldReturnMethodNotAllowedWhenAgendaAlreadyHasSession() {
         Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.OPENED, VoteResult.YES);
         VotingSession session = new VotingSession(agenda);
 
@@ -69,7 +70,7 @@ public class VotingSessionControllerTest {
                 .uri("/v1/sessions")
                 .body(BodyInserters.fromValue(session))
                 .exchange()
-                .expectStatus().isBadRequest();
+                .expectStatus().isEqualTo(HttpStatus.METHOD_NOT_ALLOWED);
     }
 
     @Test
@@ -171,7 +172,7 @@ public class VotingSessionControllerTest {
     }
 
     @Test
-    public void shouldReturnBadRequestWhenTryingToVoteOnNotOpenedSession() {
+    public void shouldReturnMethodNotAllowedWhenTryingToVoteOnNotOpenedSession() {
         Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.NEW, null);
         VotingSession session = new VotingSession(agenda);
         session.setEnd(LocalDateTime.now().plusHours(1));
@@ -182,11 +183,11 @@ public class VotingSessionControllerTest {
                 .uri("/v1/sessions/123")
                 .body(BodyInserters.fromValue(vote))
                 .exchange()
-                .expectStatus().isBadRequest();
+                .expectStatus().isEqualTo(HttpStatus.METHOD_NOT_ALLOWED);
     }
 
     @Test
-    public void shouldReturnBadRequestWhenTryingToVoteOnSessionAfterEnd() {
+    public void shouldReturnMethodNotAllowedWhenTryingToVoteOnSessionAfterEnd() {
         Agenda agenda = new Agenda("123", "TestAgenda", AgendaStatus.NEW, null);
         VotingSession session = new VotingSession(agenda);
         Vote vote = new Vote(VoteResult.YES, "321");
@@ -197,7 +198,7 @@ public class VotingSessionControllerTest {
                 .uri("/v1/sessions/123")
                 .body(BodyInserters.fromValue(vote))
                 .exchange()
-                .expectStatus().isBadRequest();
+                .expectStatus().isEqualTo(HttpStatus.METHOD_NOT_ALLOWED);
     }
 
     @Test
