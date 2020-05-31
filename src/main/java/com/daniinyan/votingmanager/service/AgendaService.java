@@ -12,12 +12,10 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.Optional;
-
 @Service
 public class AgendaService {
 
-    private AgendaRepository repository;
+    private final AgendaRepository repository;
 
     @Autowired
     public AgendaService(AgendaRepository repository) {
@@ -61,7 +59,7 @@ public class AgendaService {
                     agenda.setStatus(AgendaStatus.OPENED);
                     return agenda;
                 })
-                .flatMap(updatedAgenda -> repository.save(updatedAgenda));
+                .flatMap(repository::save);
     }
 
     public Mono<Agenda> close(String agendaId, VoteResult result) {
