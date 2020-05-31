@@ -6,11 +6,10 @@ import com.daniinyan.votingmanager.service.VotingSessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/session")
+@RequestMapping("/v1/sessions")
 public class VotingSessionController {
 
     private VotingSessionService service;

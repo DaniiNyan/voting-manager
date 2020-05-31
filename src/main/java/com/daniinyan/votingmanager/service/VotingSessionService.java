@@ -46,28 +46,6 @@ public class VotingSessionService {
                 .flatMap(repository::save);
     }
 
-    public Mono<VotingSession> update(VotingSession session) {
-        boolean isOpen = session.getAgenda().getStatus() != AgendaStatus.CLOSED;
-        boolean isExpired = session.getEnd().isBefore(LocalDateTime.now());
-
-        if (isOpen && isExpired) {
-            String agendaId = session.getAgenda().getId();
-            VoteResult result = calculateResult(session);
-            return agendaService.close(agendaId, result)
-                    .map(agenda -> {session.setAgenda(agenda); return session;});
-        }
-
-        return Mono.just(session);
-    }
-
-    public VotingSession setDefaultValues(VotingSession session) {
-        if (session.getEnd() == null) {
-            session.setEnd(LocalDateTime.now().plusMinutes(1L));
-        }
-        session.setStart(LocalDateTime.now());
-        return session;
-    }
-
     public Mono<VotingSession> addVoteToAgenda(String agendaId, Vote vote) {
         return repository.findByAgendaId(agendaId)
                 .switchIfEmpty(Mono.error(new IdNotFoundException()))
@@ -80,7 +58,32 @@ public class VotingSessionService {
                 .flatMap(repository::save);
     }
 
-    public void validateSessionToVote(VotingSession session) {
+    private Mono<VotingSession> update(VotingSession session) {
+        boolean isOpen = session.getAgenda().getStatus() != AgendaStatus.CLOSED;
+        boolean isExpired = session.getEnd().isBefore(LocalDateTime.now());
+
+        if (isOpen && isExpired) {
+            String agendaId = session.getAgenda().getId();
+            VoteResult result = calculateResult(session);
+            return agendaService.close(agendaId, result)
+                    .map(agenda -> {
+                        session.setAgenda(agenda);
+                        return session;
+                    });
+        }
+
+        return Mono.just(session);
+    }
+
+    private VotingSession setDefaultValues(VotingSession session) {
+        if (session.getEnd() == null) {
+            session.setEnd(LocalDateTime.now().plusMinutes(1L));
+        }
+        session.setStart(LocalDateTime.now());
+        return session;
+    }
+
+    private void validateSessionToVote(VotingSession session) {
         if (session.getAgenda().getStatus() != AgendaStatus.OPENED) {
             throw new AgendaException("Agenda isn't open.");
         }
@@ -90,7 +93,7 @@ public class VotingSessionService {
         }
     }
 
-    public void validateVote(Vote vote, VotingSession session) {
+    private void validateVote(Vote vote, VotingSession session) {
         if (vote.getValue() == null) {
             throw new InvalidVoteException("Must have a value.");
         }
@@ -107,7 +110,7 @@ public class VotingSessionService {
         }
     }
 
-    public VoteResult calculateResult(VotingSession session) {
+    private VoteResult calculateResult(VotingSession session) {
         if (session.getVotes().isEmpty()) {
             return VoteResult.EMPTY;
         }
