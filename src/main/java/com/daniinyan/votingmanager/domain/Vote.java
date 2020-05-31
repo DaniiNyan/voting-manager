@@ -2,14 +2,14 @@ package com.daniinyan.votingmanager.domain;
 
 public class Vote {
     private VoteResult value;
-    private String authorId;
+    private String cpf;
 
     public Vote() {
     }
 
-    public Vote(VoteResult value, String authorId) {
+    public Vote(VoteResult value, String cpf) {
         this.value = value;
-        this.authorId = authorId;
+        this.cpf = cpf;
     }
 
     public VoteResult getValue() {
@@ -20,11 +20,11 @@ public class Vote {
         this.value = value;
     }
 
-    public String getAuthorId() {
-        return authorId;
+    public String getCpf() {
+        return cpf;
     }
 
-    public void setAuthorId(String authorId) {
-        this.authorId = authorId;
+    public void setCpf(String cpf) {
+        this.cpf = cpf;
     }
 }

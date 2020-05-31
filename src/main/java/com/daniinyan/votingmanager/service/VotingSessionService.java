@@ -17,11 +17,13 @@ public class VotingSessionService {
 
     private final VotingSessionRepository repository;
     private final AgendaService agendaService;
+    private final CpfValidatorService cpfValidatorService;
 
     @Autowired
-    public VotingSessionService(VotingSessionRepository repository, AgendaService agendaService) {
+    public VotingSessionService(VotingSessionRepository repository, AgendaService agendaService, CpfValidatorService cpfValidatorService) {
         this.repository = repository;
         this.agendaService = agendaService;
+        this.cpfValidatorService = cpfValidatorService;
     }
 
     public Mono<VotingSession> findByAgendaId(String agendaId) {
@@ -105,9 +107,12 @@ public class VotingSessionService {
 
         if (session.getVotes().stream()
                 .anyMatch(sessionVote ->
-                        sessionVote.getAuthorId().equals(vote.getAuthorId()))) {
+                        sessionVote.getCpf().equals(vote.getCpf()))) {
             throw new InvalidAuthorException("This author has already a vote on this session.");
         }
+
+        cpfValidatorService.validateCpf(vote.getCpf())
+                .subscribe(res -> System.out.println("RES: " + res));
     }
 
     private VoteResult calculateResult(VotingSession session) {
