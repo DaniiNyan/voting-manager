@@ -34,13 +34,13 @@ public class ExceptionController {
     @ExceptionHandler(VotingSessionException.class)
     public ResponseEntity<String> handleOpenedSession(VotingSessionException ex) {
         logger.info(ex.getMessage());
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.METHOD_NOT_ALLOWED);
     }
 
     @ExceptionHandler(AgendaException.class)
     public ResponseEntity<String> handleAgenda(AgendaException ex) {
         logger.info(ex.getMessage());
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.METHOD_NOT_ALLOWED);
     }
 
     @ExceptionHandler(InvalidVoteException.class)

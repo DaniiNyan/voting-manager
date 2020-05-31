@@ -15,6 +15,11 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb-reactive'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+	implementation 'org.springdoc:springdoc-openapi-webflux-core:1.4.0'
+	implementation 'org.springdoc:springdoc-openapi-webflux-ui:1.4.0'
+
+
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
