@@ -54,4 +54,14 @@ public class Agenda {
     public void setStatus(AgendaStatus status) {
         this.status = status;
     }
+
+    @Override
+    public String toString() {
+        return "Agenda{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", status=" + status +
+                ", result=" + result +
+                '}';
+    }
 }

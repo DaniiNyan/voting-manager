@@ -75,4 +75,15 @@ public class VotingSession {
     public void addVote(Vote vote) {
         this.votes.add(vote);
     };
+
+    @Override
+    public String toString() {
+        return "VotingSession{" +
+                "id='" + id + '\'' +
+                ", start=" + start +
+                ", end=" + end +
+                ", agenda=" + agenda +
+                ", votes=" + votes +
+                '}';
+    }
 }
