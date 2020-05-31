@@ -43,7 +43,7 @@ public class VotingSessionControllerTest {
         given(agendaRepository.save(BDDMockito.any(Agenda.class))).willReturn(Mono.just(agenda));
         given(sessionRepository.save(BDDMockito.any(VotingSession.class))).willReturn(Mono.just(session));
         client.post()
-                .uri("/session")
+                .uri("/v1/sessions")
                 .body(BodyInserters.fromValue(session))
                 .exchange()
                 .expectStatus().isCreated();
@@ -53,7 +53,7 @@ public class VotingSessionControllerTest {
     public void shouldReturnBadRequestWhenSessionDoesNotHaveAgenda() {
         VotingSession session = new VotingSession();
         client.post()
-                .uri("/session")
+                .uri("/v1/sessions")
                 .body(BodyInserters.fromValue(session))
                 .exchange()
                 .expectStatus().isBadRequest();
@@ -66,7 +66,7 @@ public class VotingSessionControllerTest {
 
         given(agendaRepository.findById("123")).willReturn(Mono.just(agenda));
         client.post()
-                .uri("/session")
+                .uri("/v1/sessions")
                 .body(BodyInserters.fromValue(session))
                 .exchange()
                 .expectStatus().isBadRequest();
@@ -76,7 +76,7 @@ public class VotingSessionControllerTest {
     public void shouldReturnNotFoundWhenSearchingByNonexistentAgenda() {
         given(sessionRepository.findByAgendaId("456")).willReturn(Mono.empty());
         client.get()
-                .uri("/session/456")
+                .uri("/v1/sessions/456")
                 .exchange()
                 .expectStatus().isNotFound();
     }
@@ -92,7 +92,7 @@ public class VotingSessionControllerTest {
         given(sessionRepository.findByAgendaId("123")).willReturn(Mono.just(session));
 
         client.get()
-                .uri("/session/123")
+                .uri("/v1/sessions/123")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -116,7 +116,7 @@ public class VotingSessionControllerTest {
         given(sessionRepository.findByAgendaId("123")).willReturn(Mono.just(session));
         given(sessionRepository.save(BDDMockito.any(VotingSession.class))).willReturn(Mono.just(sessionWithVote));
         client.patch()
-                .uri("/session/123")
+                .uri("/v1/sessions/123")
                 .body(BodyInserters.fromValue(vote))
                 .exchange()
                 .expectStatus().isOk()
@@ -133,7 +133,7 @@ public class VotingSessionControllerTest {
 
         given(sessionRepository.findByAgendaId("123")).willReturn(Mono.just(session));
         client.patch()
-                .uri("/session/123")
+                .uri("/v1/sessions/123")
                 .body(BodyInserters.fromValue(vote))
                 .exchange()
                 .expectStatus().isBadRequest();
@@ -148,7 +148,7 @@ public class VotingSessionControllerTest {
 
         given(sessionRepository.findByAgendaId("123")).willReturn(Mono.just(session));
         client.patch()
-                .uri("/session/123")
+                .uri("/v1/sessions/123")
                 .body(BodyInserters.fromValue(vote))
                 .exchange()
                 .expectStatus().isBadRequest();
@@ -164,7 +164,7 @@ public class VotingSessionControllerTest {
 
         given(sessionRepository.findByAgendaId("123")).willReturn(Mono.just(session));
         client.patch()
-                .uri("/session/123")
+                .uri("/v1/sessions/123")
                 .body(BodyInserters.fromValue(vote))
                 .exchange()
                 .expectStatus().isBadRequest();
@@ -179,7 +179,7 @@ public class VotingSessionControllerTest {
 
         given(sessionRepository.findByAgendaId("123")).willReturn(Mono.just(session));
         client.patch()
-                .uri("/session/123")
+                .uri("/v1/sessions/123")
                 .body(BodyInserters.fromValue(vote))
                 .exchange()
                 .expectStatus().isBadRequest();
@@ -194,7 +194,7 @@ public class VotingSessionControllerTest {
 
         given(sessionRepository.findByAgendaId("123")).willReturn(Mono.just(session));
         client.patch()
-                .uri("/session/123")
+                .uri("/v1/sessions/123")
                 .body(BodyInserters.fromValue(vote))
                 .exchange()
                 .expectStatus().isBadRequest();
@@ -216,7 +216,7 @@ public class VotingSessionControllerTest {
         given(agendaRepository.save(BDDMockito.any(Agenda.class))).willReturn(Mono.just(savedAgenda));
         given(sessionRepository.save(BDDMockito.any(VotingSession.class))).willReturn(Mono.just(savedSession));
         client.get()
-                .uri("/session/123")
+                .uri("/v1/sessions/123")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -244,7 +244,7 @@ public class VotingSessionControllerTest {
         given(agendaRepository.save(BDDMockito.any(Agenda.class))).willReturn(Mono.just(savedAgenda));
         given(sessionRepository.save(BDDMockito.any(VotingSession.class))).willReturn(Mono.just(savedSession));
         client.get()
-                .uri("/session/123")
+                .uri("/v1/sessions/123")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()

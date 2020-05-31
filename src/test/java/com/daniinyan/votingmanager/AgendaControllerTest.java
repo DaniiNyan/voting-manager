@@ -33,7 +33,7 @@ public class AgendaControllerTest {
         given(repository.save(BDDMockito.any(Agenda.class))).willReturn(Mono.just(agenda));
 
         client.post()
-                .uri("/agenda")
+                .uri("/v1/agendas")
                 .body(BodyInserters.fromValue(agenda))
                 .exchange()
                 .expectStatus().isCreated()
@@ -48,7 +48,7 @@ public class AgendaControllerTest {
     public void shouldReturnBadRequestWhenAgendaDoesNotHaveAName() {
         Agenda agenda = new Agenda();
         client.post()
-                .uri("/agenda")
+                .uri("/v1/agendas")
                 .body(BodyInserters.fromValue(agenda))
                 .exchange()
                 .expectStatus().isBadRequest();
@@ -60,7 +60,7 @@ public class AgendaControllerTest {
         given(repository.findById("123")).willReturn(Mono.just(agenda));
 
         client.get()
-                .uri("/agenda/123")
+                .uri("/v1/agendas/123")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -73,7 +73,7 @@ public class AgendaControllerTest {
     public void shouldReturnNotFoundWhenSearchingByNonexistentId() {
         given(repository.findById("456")).willReturn(Mono.empty());
         client.get()
-                .uri("/agenda/456")
+                .uri("/v1/agendas/456")
                 .exchange()
                 .expectStatus().isNotFound();
     }
@@ -87,7 +87,7 @@ public class AgendaControllerTest {
         ));
 
         client.get()
-                .uri("/agenda")
+                .uri("/v1/agendas")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(Agenda.class).hasSize(3);
