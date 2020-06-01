@@ -4,7 +4,7 @@
 - [About it](https://github.com/DaniiNyan/voting-manager#about-it)
 - [Getting Started](https://github.com/DaniiNyan/voting-manager#getting-started)
 - [API Documentation](https://github.com/DaniiNyan/voting-manager#api-documentation)
-- [Next Features and Improvements](https://github.com/DaniiNyan/voting-manager#next-features-and-improvements)
+- [Next Features](https://github.com/DaniiNyan/voting-manager#next-features)
 
 ## Challenge
 
@@ -47,7 +47,21 @@ Performance tests are a great way to grant and observe how your application beha
 How would you version your application API? Which strategy will you use?  
 
 ## About it
-WIP
+Chosen technologies:
+- Java 8;
+- WebFlux (reactive API calls);
+- MongoDB (NoSQL database);
+- SpringDocs/Swagger (API documentation);
+- SLF4J (logs);
+- Docker and Docker-Compose (containers);
+
+Seeking the best performance and scalability, I choose to built my APIs using the reactive approach of WebFlux. 
+Because its fully asynchronous and non-blocking requests, it's possible to handle massive number of concurrent connections and vertically scale the application.
+To fit my purpose of building a fast and scalable application, I choose MongoDB as a database.
+
+I believe documentation is a very important resource. Because of that, I wrote my docs using Swagger since it's really easy to understand APIs through it.  
+
+As versioning strategy, I choose to do it through URI path.  
 
 ## Getting Started
 
@@ -59,8 +73,10 @@ Clone this repo and in its folder run the following command:
 `docker-compose up`
 
 ## API Documentation
-Once your application is running, you'll be able to see all available APIs through Swagger. You can access it with the following link:  
+Once your application is running, you'll be able to see and use all available APIs through Swagger. You can access it with the following link:  
 `http://localhost:8080/swagger-ui.html` 
 
-## Next Features and Improvements
-WIP
+## Next Features
+- Add performance tests;
+- Do external system integration with WebClient;
+- Implement messaging;
