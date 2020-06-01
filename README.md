@@ -40,8 +40,7 @@ The voting result must be informed to the remaining platform, this should be don
 
 ### Bonus Task 3 - Performance
 Imagine your application can be used in scenarios where hundreds of thousands votes exists. 
-It must behave performative in these scenarios.  
-Performance tests are a great way to grant and observe how your application behaves.
+It must behave performative in these scenarios. Performance tests are a great way to grant and observe how your application behaves.
 
 ### Bonut Task 4 - API version
 How would you version your application API? Which strategy will you use?  
@@ -73,7 +72,8 @@ Clone this repo and in its folder run the following command:
 `docker-compose up`
 
 ## API Documentation
-Once your application is running, you'll be able to see and use all available APIs through Swagger. You can access it with the following link:  
+Once your application is running, you'll be able to see and use all available APIs through Swagger.  
+You can access it within the following link:  
 `http://localhost:8080/swagger-ui.html` 
 
 ## Next Features
